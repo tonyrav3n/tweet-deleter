@@ -152,7 +152,7 @@ if (window.__tweetCleanerLoaded) {
           if (r.status === 404) {
             // 404 means the page/cursor does not exist - no more tweets
             log('No more tweets available (404)');
-            return { data: null }; // 빈 응답으로 처리하여 harvest 종료
+            return { data: null }; // Handle as empty response to terminate harvest
           }
 
           if (!r.ok) {
@@ -160,7 +160,7 @@ if (window.__tweetCleanerLoaded) {
             const text = await r.text();
             log('Response:', text);
 
-            // 5xx 서버 에러는 짧은 대기 후 재시도
+            // Retry after short wait for 5xx server errors
             if (r.status >= 500 && retryCount < 2) {
               log(`Server error ${r.status}, retrying in 3s...`);
               await sleep(3000);
@@ -172,11 +172,11 @@ if (window.__tweetCleanerLoaded) {
 
           return r.json();
         } catch (err) {
-          // 네트워크 에러나 기타 에러에 대한 개선된 retry 로직
+          // Improved retry logic for network or other errors
           if (retryCount < 3) {
             // Exponential backoff with jitter
             const baseWait = 1000 * Math.pow(2, retryCount); // 1s, 2s, 4s
-            const jitter = Math.random() * 500; // 0-500ms 랜덤
+            const jitter = Math.random() * 500; // 0-500ms random
             const waitTime = baseWait + jitter;
 
             log(
@@ -344,7 +344,7 @@ if (window.__tweetCleanerLoaded) {
                   for (const mod of e.content.items) {
                     const t = mod.item?.itemContent?.tweet_results?.result;
                     if (!t || !t.legacy) continue;
-                    // 여기서 pass(t) 검사 후 id 뽑기
+                    // Check pass(t) here and extract id
                     const id = t.legacy.id_str;
                     if (pass(t) && !ids.includes(id)) ids.push(id);
                     foundEntries = true;
@@ -386,13 +386,13 @@ if (window.__tweetCleanerLoaded) {
 
             log(`Progress: found ${ids.length} tweets to delete so far`);
 
-            // 동적 대기 시간: 성공적으로 트윗을 찾으면 짧게, 아니면 길게
+            // Dynamic wait time: short if tweets found successfully, long otherwise
             const foundTweetsInBatch = foundEntries ? 500 : 1500;
             await sleep(foundTweetsInBatch);
           } catch (err) {
             log('Error harvesting tweets:', err);
 
-            // 에러 타입에 따라 다른 대기 시간 적용
+            // Apply different wait times based on error type
             if (
               err.message.includes('404') ||
               err.message.includes('No more tweets')
@@ -426,12 +426,12 @@ if (window.__tweetCleanerLoaded) {
         const results = {
           success: 0,
           failed: 0,
-          notFound: 0, // 404 - 존재하지 않는 트윗
-          rateLimited: 0, // 429 재시도 횟수
+          notFound: 0, // 404 - tweet does not exist
+          rateLimited: 0, // 429 retry count
         };
 
-        // 동적 delay 조정을 위한 변수들
-        let baseDelay = 200; // 기본 delay를 더 빠르게
+        // Variables for dynamic delay adjustment
+        let baseDelay = 200; // Make base delay faster
         let consecutiveErrors = 0;
         const maxDelay = 2000;
         const minDelay = 100;
@@ -466,19 +466,19 @@ if (window.__tweetCleanerLoaded) {
               log('Rate-limit hit, waiting 60 seconds...');
               results.rateLimited++;
               i--; // retry this tweet
-              baseDelay = Math.min(baseDelay * 1.5, maxDelay); // delay 증가
+              baseDelay = Math.min(baseDelay * 1.5, maxDelay); // increase delay
               await sleep(60000);
               continue;
             }
 
             if (r.status === 404) {
-              // 404는 존재하지 않는 트윗이므로 별도 카운트하고 즉시 다음으로
+              // 404 means tweet doesn't exist, count separately and proceed immediately
               log(
                 `Tweet ${list[i]} not found (404) - already deleted or doesn't exist`
               );
               results.notFound++;
-              consecutiveErrors = 0; // 404는 정상적인 상황으로 간주
-              // 404는 성공적인 처리로 간주하여 delay 감소
+              consecutiveErrors = 0; // Consider 404 as normal situation
+              // Consider 404 as successful processing and reduce delay
               baseDelay = Math.max(baseDelay * 0.9, minDelay);
             } else if (!r.ok) {
               const text = await r.text();
@@ -488,17 +488,17 @@ if (window.__tweetCleanerLoaded) {
               );
               results.failed++;
               consecutiveErrors++;
-              // 에러 시 delay 증가
+              // Increase delay on error
               baseDelay = Math.min(baseDelay * 1.2, maxDelay);
             } else {
               log(`Successfully deleted ${i + 1}/${list.length}`, list[i]);
               results.success++;
               consecutiveErrors = 0;
-              // 성공 시 delay 감소
+              // Reduce delay on success
               baseDelay = Math.max(baseDelay * 0.95, minDelay);
             }
 
-            // 동적 delay: 연속 에러가 많을수록 더 긴 대기
+            // Dynamic delay: longer wait with more consecutive errors
             const errorMultiplier = 1 + consecutiveErrors * 0.2;
             const dynamicDelay =
               baseDelay * errorMultiplier + Math.floor(Math.random() * 100);
@@ -508,7 +508,7 @@ if (window.__tweetCleanerLoaded) {
             results.failed++;
             consecutiveErrors++;
             baseDelay = Math.min(baseDelay * 1.3, maxDelay);
-            await sleep(Math.min(baseDelay * 2, 5000)); // 네트워크 에러는 더 긴 대기
+            await sleep(Math.min(baseDelay * 2, 5000)); // Network errors get longer wait
           }
         }
 
@@ -545,7 +545,7 @@ if (window.__tweetCleanerLoaded) {
 
         const results = await nuke(ids);
 
-        // 개선된 결과 표시
+        // Improved result display
         const totalProcessed =
           results.success + results.failed + results.notFound;
         updateStatus(`Done! Processed ${totalProcessed} tweets`);
