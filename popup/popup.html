@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tweet Cleaner v1.3</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Helvetica, Arial, sans-serif;
+        width: 320px;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      .container {
+        padding: 16px;
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0 0 16px 0;
+        color: #1d9bf0;
+      }
+      .button {
+        display: block;
+        width: 100%;
+        background-color: #1d9bf0;
+        color: white;
+        border: none;
+        border-radius: 24px;
+        padding: 10px 16px;
+        font-size: 15px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 16px;
+      }
+      .button:hover {
+        background-color: #1a8cd8;
+      }
+      .button:disabled {
+        background-color: #8ecdf7;
+        cursor: not-allowed;
+      }
+      .input-group {
+        margin-bottom: 12px;
+      }
+      label {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+      input[type='text'],
+      input[type='date'] {
+        width: calc(100% - 16px);
+        padding: 8px;
+        border: 1px solid #cfd9de;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .checkbox-group label {
+        margin-left: 8px;
+        margin-bottom: 0;
+        cursor: pointer;
+      }
+      .status {
+        margin-top: 16px;
+        padding: 8px;
+        background-color: #f7f9fa;
+        border-radius: 4px;
+        font-size: 13px;
+        display: none;
+      }
+      .error {
+        color: #e0245e;
+      }
+      .help-text {
+        font-size: 12px;
+        color: #536471;
+        margin-top: 2px;
+        margin-bottom: 8px;
+      }
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid #cfd9de;
+        margin-bottom: 16px;
+      }
+      .tab {
+        padding: 8px 16px;
+        cursor: pointer;
+        font-size: 14px;
+        border-bottom: 2px solid transparent;
+      }
+      .tab.active {
+        border-bottom-color: #1d9bf0;
+        color: #1d9bf0;
+        font-weight: bold;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      .action-buttons {
+        display: flex;
+        gap: 8px;
+      }
+      .refresh-btn {
+        font-size: 12px;
+        color: #1d9bf0;
+        cursor: pointer;
+        margin-top: 4px;
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Tweet Cleaner v1.3</h1>
+
+      <div class="tabs">
+        <div class="tab active" data-tab="filters">Filters</div>
+      </div>
+
+      <div id="filters" class="tab-content active">
+        <div class="input-group">
+          <label for="keywords">Keyword Filter (comma separated)</label>
+          <input
+            type="text"
+            id="keywords"
+            placeholder="e.g.: hate, like, whatever"
+          />
+          <div class="help-text">
+            Only tweets containing these keywords will be deleted
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="ignore">Tweet IDs to ignore (comma separated)</label>
+          <input
+            type="text"
+            id="ignore"
+            placeholder="Numbers in the link: 1234567890,9876543210"
+          />
+          <div class="help-text">Tweets with these IDs will not be deleted</div>
+        </div>
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="unretweet" checked />
+          <label for="unretweet">Unretweet</label>
+        </div>
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="keepPin" checked />
+          <label for="keepPin">Keep pinned tweets</label>
+        </div>
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="linkOnly" />
+          <label for="linkOnly">Only tweets with links</label>
+        </div>
+      </div>
+
+      <div id="advanced" class="tab-content">
+        <div class="checkbox-group">
+          <input type="checkbox" id="debugMode" />
+          <label for="debugMode">Debug mode</label>
+          <div class="help-text">Outputs detailed logs to console</div>
+        </div>
+
+        <div class="input-group">
+          <label>API Authentication Status</label>
+          <div id="authStatus">Checking...</div>
+          <div class="refresh-btn" id="refreshAuth">
+            Refresh authentication info
+          </div>
+          <div class="help-text">
+            If there's a problem, refresh your X.com profile and try scrolling
+          </div>
+        </div>
+      </div>
+
+      <button id="cleanBtn" class="button">Start deleting tweets!</button>
+
+      <div id="status" class="status"></div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

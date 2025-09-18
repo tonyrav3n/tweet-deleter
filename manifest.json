@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Tweet Cleaner",
+  "version": "0.1.0",
+  "description": "Helps with tweet cleaning!",
+  "permissions": ["storage", "tabs", "scripting", "webRequest"],
+  "host_permissions": ["https://x.com/*", "https://twitter.com/*"],
+  "icons": {
+    "64": "cleaning-icon.png"
+  },
+  "background": { "service_worker": "service_worker.js" },
+  "action": { "default_popup": "popup/popup.html" },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
